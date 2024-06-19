@@ -51,7 +51,7 @@ export default function ExpenseDetail({expense} : ExpenseDetailProps) {
             trailingActions={trailingActions()}
         >
 
-            <div className="bg-white shadow-lg p-10 w-full border-b boder-gray-200 flex gap-5">
+            <div className="bg-white shadow-lg p-5 w-full border-b boder-gray-200 flex gap-5">
 
                 <div>
                     <img 

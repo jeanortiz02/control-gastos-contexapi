@@ -3,7 +3,7 @@ import { categories } from "../data/categories";
 import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import 'react-calendar/dist/Calendar.css';
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { DraftExpense, Value } from "../types";
 import ErrorMessage from "./ErrorMessage";
 import { useBudget } from "../hooks/useBudget";
@@ -11,8 +11,6 @@ import { useBudget } from "../hooks/useBudget";
 
 export default function ExpenseForm() {
 
-    
-    
     const [expense, setExpense] = useState<DraftExpense>({
         expenseName: '',
         amount: 0,
@@ -21,7 +19,15 @@ export default function ExpenseForm() {
     });
     
     const [error, setError] = useState('')
-    const { dispatch} = useBudget()
+    const { dispatch, state} = useBudget()
+
+    useEffect( () => {
+        if ( state.editingId ) {
+            const edit = state.expense.filter( currentExpense => currentExpense.id === state.editingId)[0];
+            
+            setExpense(edit);
+        }
+    }, [state.editingId])
 
 
     const handleChange = ( e : ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>) => {
@@ -49,7 +55,12 @@ export default function ExpenseForm() {
         }
 
         // Agregando un nuevo gasto
-        dispatch( {type: 'add-expense', payload: { expense }})
+
+        if ( state.editingId  ) {
+            dispatch({ type: 'update-expense', payload: { expense: { id: state.editingId, ...expense}}})
+        } else {
+            dispatch( {type: 'add-expense', payload: { expense }})
+        }
 
         // Reiniciar el State 
         setExpense( {
@@ -67,7 +78,7 @@ export default function ExpenseForm() {
     >
 
         <legend className="uppercase text-center text-2xl font-black border-b-4 py-2 border-blue-500">
-            Nuevos Gastos
+            {state.editingId ? 'Guardar Cambios' : 'Nuevos Gastos'}
         </legend>
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -151,18 +162,11 @@ export default function ExpenseForm() {
                 onChange={handleDateChange}
             />
 
-            {/* <input 
-                type="number" 
-                id="date"
-                placeholder="Agrega la cantidad del gasto, ejemplo: 300"
-                className="bg-slate-100 p-2 "
-                name="date"
-            /> */}
         </div>
 
         <input 
             type="submit" 
-            value={'Registrar gasto'}
+            value={state.editingId ? 'Actualizar Cambios' : 'Registrar Gasto'}
             className="bg-blue-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-lg"
         />
         
